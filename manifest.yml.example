@@ -1,0 +1,10 @@
+---
+applications:
+- name: ruby-sinatra-example-app
+  memory: 128M
+  instances: 1
+  host: ruby-sinatra-example-app
+  domain: aws.ie.a9sapp.eu
+  buildpack: ruby_buildpack
+  path: .
+  command: ruby app.rb
