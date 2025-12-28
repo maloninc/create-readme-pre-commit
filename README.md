@@ -8,6 +8,7 @@
 - 環境変数の表示
 - 外部サイト（Google）へのプロキシ
 - 自動テストスイート
+- Yahooへのプロキシ
 - **AI駆動の自動ドキュメント更新チェック** 🤖
 
 ## エンドポイント
@@ -18,6 +19,7 @@
 - `GET /greetings` - シンプルな挨拶メッセージ
 - `GET /hello-world` - Hello, Worldメッセージ
 - `GET /google` - Google.comのプロキシ
+- `GET /yahoo` - Yahoo.comのプロキシ
 
 ## セットアップ
 
