@@ -18,8 +18,6 @@
 - `GET /hello` - Hello worldメッセージと環境変数を表示
 - `GET /greetings` - シンプルな挨拶メッセージ
 - `GET /hello-world` - Hello, Worldメッセージ
-- `GET /google` - Google.comのプロキシ
-- `GET /yahoo` - Yahoo.comのプロキシ
 
 ## セットアップ
 
@@ -120,7 +118,6 @@ GitHub Actionsを有効にするには、以下の手順でシークレットを
 ### 注意事項
 
 1. **セキュリティ**: `/hello`エンドポイントは環境変数を表示します。本番環境では無効化またはアクセス制限を設けてください。
-2. **外部依存**: `/google`エンドポイントは外部サービスに依存しているため、Googleのサービス状態に影響を受けます。
 
 ## ライセンス
 
