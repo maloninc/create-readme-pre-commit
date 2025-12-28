@@ -259,7 +259,7 @@ ${diff}
     # Call API
     log_info "Calling GitHub Models API with model: $models_name"
     if [ -n "$DEBUG" ]; then
-        log_info "PROMPT:\n\n$prompt\n\n"
+        log_info "====BEGIN PROMPT====\n$prompt\n====END PROMPT====\n"
     fi
     call_github_models_api "$prompt" "$models_name" "$models_token"
 }
@@ -298,6 +298,10 @@ main() {
         echo "has_suggestions=false" >> "$github_output"
         exit 0
     }
+
+    if [ -n "$DEBUG" ]; then
+        log_info "====BEGIN SUGGESTIONS====\n$suggestions\n====END SUGGESTIONS====\n"
+    fi
 
     if [ -n "$suggestions" ] && ! echo "$suggestions" | grep -qE "(ドキュメントは適切に更新されています|追加の修正は不要です)"; then
         # Write suggestions to file
