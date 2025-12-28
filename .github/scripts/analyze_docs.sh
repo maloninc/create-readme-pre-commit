@@ -69,7 +69,7 @@ call_github_models_api() {
         return 1
     fi
 
-    local url="https://models.github.ai/inference/chat/completions"
+    local url="https://api.openai.com/v1/chat/completions"
 
     # Build JSON payload
     local system_message="あなたは技術ドキュメントのアシスタントです。コードの変更を分析し、README.mdとAPI-spec.mdファイルの更新を日本語で提案してください。提案はdiff形式で具体的に示してください。"
