@@ -72,7 +72,7 @@ GitHub Actionsを有効にするには、以下の手順でシークレットを
 1. GitHubリポジトリの **Settings** → **Secrets and variables** → **Actions** に移動
 2. **New repository secret** をクリック
 3. 以下のシークレットを追加：
-   - **Name**: `GITHUB_MODELS_TOKEN`
+   - **Name**: `MODELS_TOKEN`
    - **Value**: あなたのGitHub Models用Personal Access Token
 
 ### GitHub Models Personal Access Tokenの作成方法

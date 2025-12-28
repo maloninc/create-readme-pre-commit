@@ -46,7 +46,7 @@
 
 1. **New repository secret** ボタンをクリック
 2. Secret の設定：
-   - **Name**: `GITHUB_MODELS_TOKEN`
+   - **Name**: `MODELS_TOKEN`
    - **Secret**: ステップ1でコピーしたPersonal Access Token
 3. **Add secret** をクリック
 
@@ -82,14 +82,16 @@
 
 ## トラブルシューティング
 
-### エラー: "GITHUB_MODELS_TOKEN not set"
+### エラー: "MODELS_TOKEN not set"
 
 **原因**: Secretが正しく設定されていない
 
 **解決方法**:
 1. リポジトリの Settings → Secrets → Actions を確認
-2. `GITHUB_MODELS_TOKEN` が存在することを確認
+2. `MODELS_TOKEN` が存在することを確認（**Repository secrets**に設定）
 3. 存在しない場合は、ステップ2を再実行
+
+**注意**: `GITHUB_`で始まる名前は使用できません
 
 ### エラー: "Error calling GitHub Models API"
 

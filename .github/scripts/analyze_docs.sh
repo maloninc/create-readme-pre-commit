@@ -64,7 +64,7 @@ call_github_models_api() {
     local token="$3"
 
     if [ -z "$token" ]; then
-        log_error "GITHUB_MODELS_TOKEN is required"
+        log_error "MODELS_TOKEN is required"
         return 1
     fi
 
@@ -120,7 +120,7 @@ analyze_changes() {
     local changed_files="$1"
     local base_ref="$2"
     local head_sha="$3"
-    local github_models_token="$4"
+    local models_token="$4"
 
     # Filter for relevant files (Ruby source files)
     local relevant_files=$(echo "$changed_files" | grep -E '\.(rb|ru)$' || true)
@@ -224,19 +224,19 @@ If no documentation updates are needed, respond with:
 
     # Call API
     log_info "Calling GitHub Models API..."
-    call_github_models_api "$prompt" "gpt-4o" "$github_models_token"
+    call_github_models_api "$prompt" "gpt-4o" "$models_token"
 }
 
 # Main function
 main() {
     # Get environment variables
-    local github_models_token="${GITHUB_MODELS_TOKEN:-}"
+    local models_token="${MODELS_TOKEN:-}"
     local base_ref="${BASE_REF:-main}"
     local head_sha="${HEAD_SHA:-}"
     local github_output="${GITHUB_OUTPUT:-/dev/stdout}"
 
-    if [ -z "$github_models_token" ]; then
-        log_error "GITHUB_MODELS_TOKEN not set"
+    if [ -z "$models_token" ]; then
+        log_error "MODELS_TOKEN not set"
         exit 1
     fi
 
@@ -253,7 +253,7 @@ main() {
 
     # Analyze changes
     local suggestions
-    suggestions=$(analyze_changes "$changed_files" "$base_ref" "$head_sha" "$github_models_token") || {
+    suggestions=$(analyze_changes "$changed_files" "$base_ref" "$head_sha" "$models_token") || {
         log_info "No documentation updates needed"
         echo "has_suggestions=false" >> "$github_output"
         exit 0
