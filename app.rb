@@ -27,3 +27,8 @@ get "/google" do
   require "httparty"
   HTTParty.get('http://google.com', follow_redirects: true).body
 end
+
+get "/yahoo" do
+  require "httparty"
+  HTTParty.get('http://yahoo.com', follow_redirects: true).body
+end
