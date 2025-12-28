@@ -8,6 +8,7 @@
 - 環境変数の表示
 - 外部サイト（Google）へのプロキシ
 - 自動テストスイート
+- Yahooへのプロキシ
 - **AI駆動の自動ドキュメント更新チェック** 🤖
 
 ## エンドポイント
@@ -17,7 +18,6 @@
 - `GET /hello` - Hello worldメッセージと環境変数を表示
 - `GET /greetings` - シンプルな挨拶メッセージ
 - `GET /hello-world` - Hello, Worldメッセージ
-- `GET /google` - Google.comのプロキシ
 
 ## セットアップ
 
@@ -72,7 +72,7 @@ GitHub Actionsを有効にするには、以下の手順でシークレットを
 1. GitHubリポジトリの **Settings** → **Secrets and variables** → **Actions** に移動
 2. **New repository secret** をクリック
 3. 以下のシークレットを追加：
-   - **Name**: `GITHUB_MODELS_TOKEN`
+   - **Name**: `MODELS_TOKEN`
    - **Value**: あなたのGitHub Models用Personal Access Token
 
 ### GitHub Models Personal Access Tokenの作成方法
@@ -118,7 +118,6 @@ GitHub Actionsを有効にするには、以下の手順でシークレットを
 ### 注意事項
 
 1. **セキュリティ**: `/hello`エンドポイントは環境変数を表示します。本番環境では無効化またはアクセス制限を設けてください。
-2. **外部依存**: `/google`エンドポイントは外部サービスに依存しているため、Googleのサービス状態に影響を受けます。
 
 ## ライセンス
 

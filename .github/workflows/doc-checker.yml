@@ -1,3 +1,15 @@
+# Documentation Checker
+# 
+# GitHub Modelsを使って、README.mdとAPI-spec.mdの更新要否を判定してレビューコメントを作ってくれます。
+# 仕様変更があってコードを改修しても、ドキュメントを更新し忘れることはよくあることですが、その問題にAIを使って解決しようとするものです。
+#
+# [環境変数]
+# MODELS_NAME: GitHub Modelsで使用するモデル名 https://github.com/marketplace/models
+# DEBUG: デバッグモード、プロンプトとAIのレスポンスをログに出力
+#
+# [SECRET]
+# MODELS_TOKEN: GitHub ModelsのためのPrivate Access Token
+#
 name: Documentation Checker
 
 on:
@@ -35,7 +47,9 @@ jobs:
         id: analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_MODELS_TOKEN: ${{ secrets.GITHUB_MODELS_TOKEN }}
+          MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
+          MODELS_NAME: ${{ vars.MODELS_NAME }}
+          DEBUG: ${{ vars.DEBUG }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
           BASE_REF: ${{ github.base_ref }}

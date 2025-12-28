@@ -10,7 +10,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 log_info() {
-    echo -e "${GREEN}✓${NC} $1"
+    echo -e "${GREEN}✓${NC} $1" >&2
 }
 
 log_error() {
@@ -18,7 +18,7 @@ log_error() {
 }
 
 log_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo -e "${YELLOW}⚠${NC} $1" >&2
 }
 
 # Get list of changed files
@@ -36,6 +36,7 @@ get_file_diff() {
     local base_ref="$2"
     local head_sha="$3"
 
+    log_info "diff origin/${base_ref}...${head_sha} -- $file_path"
     git diff "origin/${base_ref}...${head_sha}" -- "$file_path" 2>/dev/null || echo ""
 }
 
@@ -64,14 +65,14 @@ call_github_models_api() {
     local token="$3"
 
     if [ -z "$token" ]; then
-        log_error "GITHUB_MODELS_TOKEN is required"
+        log_error "MODELS_TOKEN is required"
         return 1
     fi
 
-    local url="https://models.inference.ai.azure.com/chat/completions"
+    local url="https://api.openai.com/v1/chat/completions"
 
     # Build JSON payload
-    local system_message="You are a technical documentation assistant. Analyze code changes and suggest documentation updates for README.md and API-spec.md files."
+    local system_message="あなたは技術ドキュメントのアシスタントです。コードの変更を分析し、README.mdとAPI-spec.mdファイルの更新を日本語で提案してください。提案はdiff形式で具体的に示してください。"
 
     local payload=$(jq -n \
         --arg model "$model" \
@@ -89,8 +90,7 @@ call_github_models_api() {
                     content: $user_msg
                 }
             ],
-            temperature: 0.3,
-            max_tokens: 4000
+            temperature: 0,
         }')
 
     # Make API call
@@ -120,7 +120,8 @@ analyze_changes() {
     local changed_files="$1"
     local base_ref="$2"
     local head_sha="$3"
-    local github_models_token="$4"
+    local models_token="$4"
+    local models_name="$5"
 
     # Filter for relevant files (Ruby source files)
     local relevant_files=$(echo "$changed_files" | grep -E '\.(rb|ru)$' || true)
@@ -132,16 +133,16 @@ analyze_changes() {
 
     log_info "Found $(echo "$relevant_files" | wc -l) relevant file(s)"
 
-    # Read current documentation
+    # Read current documentation (PR's HEAD state)
     local api_spec=$(read_file_content "API-spec.md")
     local readme=$(read_file_content "README.md")
 
     # Build analysis prompt
-    local prompt="# Code Change Analysis Request
+    local prompt="# コード変更の分析依頼
 
-Please analyze the following code changes and determine if documentation updates are needed.
+このPRのコード変更と、現在のドキュメント内容を比較して、ドキュメントが適切に更新されているかを確認してください。
 
-## Current API Specification
+## 現在のAPI仕様書（このPRの最新状態）
 "
 
     if [ -n "$api_spec" ]; then
@@ -152,12 +153,12 @@ ${api_spec}
 "
     else
         prompt+="
-(No API-spec.md exists yet)
+（API-spec.mdはまだ存在しません）
 "
     fi
 
     prompt+="
-## Current README
+## 現在のREADME（このPRの最新状態）
 "
 
     if [ -n "$readme" ]; then
@@ -168,12 +169,12 @@ ${readme}
 "
     else
         prompt+="
-(No README.md exists yet)
+（README.mdはまだ存在しません）
 "
     fi
 
     prompt+="
-## Code Changes
+## コードの変更内容
 "
 
     # Add diffs for each relevant file
@@ -181,9 +182,11 @@ ${readme}
         [ -z "$file_path" ] && continue
 
         local diff=$(get_file_diff "$file_path" "$base_ref" "$head_sha")
+        log_info "DIFF:\n$diff"
+
         if [ -n "$diff" ]; then
             prompt+="
-### File: ${file_path}
+### ファイル: ${file_path}
 \`\`\`diff
 ${diff}
 \`\`\`
@@ -192,53 +195,89 @@ ${diff}
     done <<< "$relevant_files"
 
     prompt+="
-## Instructions
+## 指示
 
-Analyze the code changes and:
+コードの変更内容と、現在のドキュメント（このPRの最新状態）を比較して、以下を判断してください：
 
-1. Determine if README.md needs to be created or updated
-2. Determine if API-spec.md needs to be updated
-3. For each needed update, provide:
-   - A clear explanation of what changed
-   - The specific documentation sections that need updates
-   - Concrete suggested changes in markdown format
+**判断基準**:
+1. コード変更がドキュメントに正確に反映されているか？
+2. 新しいエンドポイント、機能、変更がドキュメントに記載されているか？
+3. ドキュメントの内容が不足していたり、不正確な部分はないか？
 
-Format your response as:
+**判断結果**:
+- ドキュメントが既に適切に更新されている → 「ドキュメントは適切に更新されています」と記載
+- ドキュメントが不足または不正確 → 具体的な修正をdiff形式で提案
 
-## Analysis Summary
-[Brief summary of changes]
+回答は以下の形式で記述してください：
 
-## Documentation Updates Needed
+## 📋 変更の概要
+[コード変更内容の簡潔な要約]
+
+## 📝 ドキュメントの確認結果
 
 ### README.md
-[State if update needed: YES/NO/CREATE]
-[If YES/CREATE: provide specific suggestions]
+**判定**: [✅ 適切に更新されている / ⚠️ 更新が必要]
+
+[更新が必要な場合のみ、以下のdiff形式で具体的な修正を提案]
+
+\`\`\`diff
+--- README.md
++++ README.md
+@@ -行番号,行数 +行番号,行数 @@
+ 既存の行
+-削除する行
++追加する行
+ 既存の行
+\`\`\`
 
 ### API-spec.md
-[State if update needed: YES/NO]
-[If YES: provide specific suggestions]
+**判定**: [✅ 適切に更新されている / ⚠️ 更新が必要]
 
-If no documentation updates are needed, respond with:
-\"No documentation updates required.\"
+[更新が必要な場合のみ、以下のdiff形式で具体的な修正を提案]
+
+\`\`\`diff
+--- API-spec.md
++++ API-spec.md
+@@ -行番号,行数 +行番号,行数 @@
+ 既存の行
+-削除する行
++追加する行
+ 既存の行
+\`\`\`
+
+**重要**:
+- すべての回答は日本語で記述してください
+- 修正が必要な場合は、必ずdiff形式で具体的に示してください
+- 行番号は概算で構いません
+- ドキュメントが既に適切に更新されている場合は、追加の提案は不要です
+
+すべてのドキュメントが適切に更新されている場合は、以下のように回答してください：
+\"ドキュメントは適切に更新されています。追加の修正は不要です。\"
 "
 
     # Call API
-    log_info "Calling GitHub Models API..."
-    call_github_models_api "$prompt" "gpt-4o" "$github_models_token"
+    log_info "Calling GitHub Models API with model: $models_name"
+    if [ -n "$DEBUG" ]; then
+        log_info "====BEGIN PROMPT====\n$prompt\n====END PROMPT====\n"
+    fi
+    call_github_models_api "$prompt" "$models_name" "$models_token"
 }
 
 # Main function
 main() {
     # Get environment variables
-    local github_models_token="${GITHUB_MODELS_TOKEN:-}"
+    local models_token="${MODELS_TOKEN:-}"
+    local models_name="${MODELS_NAME:-gpt-4o}"  # デフォルトは gpt-4o
     local base_ref="${BASE_REF:-main}"
     local head_sha="${HEAD_SHA:-}"
     local github_output="${GITHUB_OUTPUT:-/dev/stdout}"
 
-    if [ -z "$github_models_token" ]; then
-        log_error "GITHUB_MODELS_TOKEN not set"
+    if [ -z "$models_token" ]; then
+        log_error "MODELS_TOKEN not set"
         exit 1
     fi
+
+    log_info "Using AI model: $models_name"
 
     # Get changed files
     local changed_files
@@ -253,21 +292,25 @@ main() {
 
     # Analyze changes
     local suggestions
-    suggestions=$(analyze_changes "$changed_files" "$base_ref" "$head_sha" "$github_models_token") || {
+    suggestions=$(analyze_changes "$changed_files" "$base_ref" "$head_sha" "$models_token" "$models_name") || {
         log_info "No documentation updates needed"
         echo "has_suggestions=false" >> "$github_output"
         exit 0
     }
 
-    if [ -n "$suggestions" ] && ! echo "$suggestions" | grep -q "No documentation updates required"; then
+    if [ -n "$DEBUG" ]; then
+        log_info "====BEGIN SUGGESTIONS====\n$suggestions\n====END SUGGESTIONS====\n"
+    fi
+
+    if [ -n "$suggestions" ] && ! echo "$suggestions" | grep -qE "(ドキュメントは適切に更新されています|追加の修正は不要です)"; then
         # Write suggestions to file
         cat > doc_suggestions.md <<EOF
-## 📚 Documentation Update Suggestions
+## 📚 ドキュメント更新の提案
 
 ${suggestions}
 
 ---
-*This analysis was generated automatically by AI. Please review the suggestions carefully.*
+*この分析はAIによって自動生成されました。提案内容を注意深くレビューしてください。*
 EOF
 
         # Set output for GitHub Actions

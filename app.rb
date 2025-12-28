@@ -18,12 +18,6 @@ get '/greetings' do
 end
 
 get '/hello-world' do
-  status 201
+  status 200
   return 'Hello, World'
-end
-
-
-get "/google" do
-  require "httparty"
-  HTTParty.get('http://google.com', follow_redirects: true).body
 end
