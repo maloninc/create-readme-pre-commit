@@ -36,6 +36,7 @@ get_file_diff() {
     local base_ref="$2"
     local head_sha="$3"
 
+    log_info "diff origin/${base_ref}...${head_sha} -- $file_path"
     git diff "origin/${base_ref}...${head_sha}" -- "$file_path" 2>/dev/null || echo ""
 }
 
@@ -181,6 +182,8 @@ ${readme}
         [ -z "$file_path" ] && continue
 
         local diff=$(get_file_diff "$file_path" "$base_ref" "$head_sha")
+        log_info "DIFF:\n$diff"
+
         if [ -n "$diff" ]; then
             prompt+="
 ### ファイル: ${file_path}
