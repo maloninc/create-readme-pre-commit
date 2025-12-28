@@ -21,14 +21,3 @@ get '/hello-world' do
   status 201
   return 'Hello, World'
 end
-
-
-get "/google" do
-  require "httparty"
-  HTTParty.get('http://google.com', follow_redirects: true).body
-end
-
-get "/yahoo" do
-  require "httparty"
-  HTTParty.get('http://yahoo.com', follow_redirects: true).body
-end
