@@ -18,6 +18,6 @@ get '/greetings' do
 end
 
 get '/hello-world' do
-  status 201
+  status 200
   return 'Hello, World'
 end
