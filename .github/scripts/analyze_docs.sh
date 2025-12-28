@@ -122,6 +122,7 @@ analyze_changes() {
     local base_ref="$2"
     local head_sha="$3"
     local models_token="$4"
+    local models_name="$5"
 
     # Filter for relevant files (Ruby source files)
     local relevant_files=$(echo "$changed_files" | grep -E '\.(rb|ru)$' || true)
@@ -256,14 +257,15 @@ ${diff}
 "
 
     # Call API
-    log_info "Calling GitHub Models API..."
-    call_github_models_api "$prompt" "$MODELS_NAME" "$models_token"
+    log_info "Calling GitHub Models API with model: $models_name"
+    call_github_models_api "$prompt" "$models_name" "$models_token"
 }
 
 # Main function
 main() {
     # Get environment variables
     local models_token="${MODELS_TOKEN:-}"
+    local models_name="${MODELS_NAME:-gpt-4o}"  # デフォルトは gpt-4o
     local base_ref="${BASE_REF:-main}"
     local head_sha="${HEAD_SHA:-}"
     local github_output="${GITHUB_OUTPUT:-/dev/stdout}"
@@ -272,6 +274,8 @@ main() {
         log_error "MODELS_TOKEN not set"
         exit 1
     fi
+
+    log_info "Using AI model: $models_name"
 
     # Get changed files
     local changed_files
@@ -286,7 +290,7 @@ main() {
 
     # Analyze changes
     local suggestions
-    suggestions=$(analyze_changes "$changed_files" "$base_ref" "$head_sha" "$models_token") || {
+    suggestions=$(analyze_changes "$changed_files" "$base_ref" "$head_sha" "$models_token" "$models_name") || {
         log_info "No documentation updates needed"
         echo "has_suggestions=false" >> "$github_output"
         exit 0
