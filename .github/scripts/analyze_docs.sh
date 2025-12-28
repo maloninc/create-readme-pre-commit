@@ -258,6 +258,9 @@ ${diff}
 
     # Call API
     log_info "Calling GitHub Models API with model: $models_name"
+    if [ -n "$DEBUG" ]; then
+        log_info "PROMPT:\n\n$prompt\n\n"
+    fi
     call_github_models_api "$prompt" "$models_name" "$models_token"
 }
 

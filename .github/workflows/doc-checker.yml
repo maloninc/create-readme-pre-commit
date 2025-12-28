@@ -37,6 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
           MODELS_NAME: ${{ vars.MODELS_NAME }}
+          DEBUG: ${{ vars.DEBUG }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
           BASE_REF: ${{ github.base_ref }}
