@@ -31,27 +31,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
-      - name: Debug environment variables
-        env:
-          MODELS_NAME: ${{ vars.MODEL_NAME }}
-        run: |
-          echo "🔍 Debugging environment variables:"
-          echo "MODELS_NAME is set: ${MODELS_NAME:-<not set>}"
-          echo "Length: ${#MODELS_NAME}"
-          if [ -z "$MODELS_NAME" ]; then
-            echo "⚠️ MODELS_NAME is empty or not set!"
-            echo "Available vars context:"
-            echo "MODEL_NAME from vars: ${{ vars.MODEL_NAME }}"
-          else
-            echo "✅ MODELS_NAME = '$MODELS_NAME'"
-          fi
-
       - name: Analyze code changes
         id: analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
-          MODELS_NAME: ${{ vars.MODEL_NAME }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
           BASE_REF: ${{ github.base_ref }}
