@@ -90,8 +90,7 @@ call_github_models_api() {
                     content: $user_msg
                 }
             ],
-            temperature: 0.3,
-            max_tokens: 4000
+            temperature: 0,
         }')
 
     # Make API call
