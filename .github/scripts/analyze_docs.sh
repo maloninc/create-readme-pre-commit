@@ -254,6 +254,7 @@ ${diff}
 
     # Call API
     log_info "Calling GitHub Models API..."
+    log_info "PROMPT:\n $prompt"
     call_github_models_api "$prompt" "gpt-4o" "$models_token"
 }
 
